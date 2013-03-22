@@ -25,7 +25,6 @@ public class IDEWorkspaceReader implements WorkspaceReader {
     private final WorkspaceRepository repo = new WorkspaceRepository("ide");
     private final Map<String, File> mappings;
     public IDEWorkspaceReader() {
-        System.out.println("created");
         mappings = new HashMap<String, File>();
         String mapp = System.getenv("netbeansProjectMappings");
         if (mapp != null) {
@@ -53,23 +52,25 @@ public class IDEWorkspaceReader implements WorkspaceReader {
     }
 
     public File findArtifact(Artifact artifact) {
-        
         File f = mappings.get(artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getBaseVersion());
         if (f != null) {
             if ("pom".equals(artifact.getExtension())) {
                 System.out.println("artifact pom=" + artifact + " " + new File(f, "pom.xml"));
                 return new File(f, "pom.xml");
             }
-            if ("jar".equals(artifact.getExtension())) {
+            if ("jar".equals(artifact.getExtension()) && "".equals(artifact.getClassifier())) {
                 System.out.println("artifact jar=" + artifact + " " + new File(f, "target/classes"));
                 return new File(new File(f, "target"), "classes"); 
+            }
+            if ("jar".equals(artifact.getExtension()) && "tests".equals(artifact.getClassifier())) {
+                System.out.println("artifact test jar=" + artifact + " " + new File(f, "target/test-classes"));
+                return new File(new File(f, "target"), "test-classes"); 
             }
         }
         return null;
     }
 
     public List<String> findVersions(Artifact artifact) {
-        System.out.println("versions=" + artifact);
         String id = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":";
         List<String> toRet = new ArrayList<String>();
         for (String s : mappings.keySet()) {
